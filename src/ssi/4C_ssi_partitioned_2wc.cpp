@@ -50,18 +50,6 @@ void SSI::SSIPart2WC::init(MPI_Comm comm, const Teuchos::ParameterList& globalti
   const Teuchos::ParameterList& ssicontrolpart =
       Global::Problem::instance()->ssi_control_params().sublist("PARTITIONED");
 
-  // do some checks
-  {
-    auto structtimealgo =
-        Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYPE");
-    if (structtimealgo == Inpar::Solid::DynamicType::Statics)
-    {
-      FOUR_C_THROW(
-          "If you use statics as the structural time integrator no velocities will be calculated "
-          "and hence"
-          "the deformations will not be applied to the scalar transport problem!");
-    }
-  }
 
   auto convform = Teuchos::getIntegralValue<Inpar::ScaTra::ConvForm>(scatraparams, "CONVFORM");
   const bool isintensive = scatraparams.get<bool>("ISINTENSIVESCALAR");

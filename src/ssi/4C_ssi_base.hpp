@@ -379,6 +379,10 @@ namespace SSI
     /// set structure velocity field on scatra field
     void set_velocity_fields(std::shared_ptr<const Core::LinAlg::Vector<double>> vel);
 
+    /// calc velocities for the quasi-static case as backward difference
+    std::shared_ptr<const Core::LinAlg::Vector<double>> calc_velocity(
+        const Core::LinAlg::Vector<double>& dispnp);
+
     //! different time step size between scatra field and structure field
     const bool diff_time_step_size_;
 

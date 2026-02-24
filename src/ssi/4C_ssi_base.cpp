@@ -514,7 +514,7 @@ void SSI::SSIBase::set_struct_solution(const Core::LinAlg::Vector<double>& disp,
   check_is_setup();
 
   set_mesh_disp(disp);
-  set_velocity_fields(vel);
+  set_velocity_fields(scatra_field()->is_quasistatic() ? calc_velocity(disp) : vel);
 
   if (set_mechanical_stress)
     set_mechanical_stress_state(modelevaluator_ssi_base_->get_mechanical_stress_state_n());
@@ -572,6 +572,21 @@ void SSI::SSIBase::evaluate_and_set_temperature_field()
     // set temperature vector to structure discretization
     ssicoupling_->set_temperature_field(*structure_->discretization(), temperature_vector_);
   }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::shared_ptr<const Core::LinAlg::Vector<double>> SSI::SSIBase::calc_velocity(
+    const Core::LinAlg::Vector<double>& dispnp)
+{
+  std::shared_ptr<Core::LinAlg::Vector<double>> vel = nullptr;
+  // copy D_n onto V_n+1
+  vel = std::make_shared<Core::LinAlg::Vector<double>>(*(structure_field()->dispn()));
+  // calculate velocity with timestep Dt()
+  //  V_n+1^k = (D_n+1^k - D_n) / Dt
+  vel->update(1. / dt(), dispnp, -1. / dt());
+
+  return vel;
 }
 
 /*----------------------------------------------------------------------*/

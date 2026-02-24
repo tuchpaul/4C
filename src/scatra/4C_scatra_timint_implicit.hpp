@@ -415,6 +415,9 @@ namespace ScaTra
     //! return ALE flag
     [[nodiscard]] bool is_ale() const { return isale_; }
 
+    //! return quasistatic flag
+    [[nodiscard]] bool is_quasistatic() const { return quasistatic_; }
+
     //! return flag for macro scale in multi-scale simulations
     [[nodiscard]] bool macro_scale() const { return macro_scale_; }
 
@@ -1256,6 +1259,10 @@ namespace ScaTra
 
     //! flag for Eulerian or ALE formulation of equation(s)
     bool isale_;
+
+    //! flag indicating quasi-static structural integration.
+    //! Velocities are computed using a backward difference of the displacement field.
+    bool quasistatic_;
 
     //! solvertype and flags for nonlinear (always incremental) and (linear) incremental solver
     Inpar::ScaTra::SolverType solvtype_;

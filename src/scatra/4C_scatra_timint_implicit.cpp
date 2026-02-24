@@ -70,6 +70,7 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(std::shared_ptr<Core::FE::Discretizat
       strategy_(nullptr),
       additional_model_evaluator_(nullptr),
       isale_(extraparams->get<bool>("isale")),
+      quasistatic_(params->get<bool>("isquasistatic", false)),
       solvtype_(Teuchos::getIntegralValue<Inpar::ScaTra::SolverType>(*params, "SOLVERTYPE")),
       equilibrationmethod_(
           Teuchos::getIntegralValue<Core::LinAlg::EquilibrationMethod>(*params, "EQUILIBRATION")),

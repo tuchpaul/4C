@@ -62,6 +62,11 @@ void ssi_drt()
     // by default we employ an ale formulation for our scatra
     bool isale = true;
 
+    // set quasistatic flag if static time integration was used for the structure field
+    const bool isquasistatic = (Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(
+                                    sdyn, "DYNAMICTYPE") == Inpar::Solid::DynamicType::Statics);
+    scatradyn.set<bool>("isquasistatic", isquasistatic);
+
     // 3.1 choose algorithm depending on solution type
     switch (coupling)
     {
