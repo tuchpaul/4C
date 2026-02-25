@@ -194,7 +194,8 @@ void SSI::SSIPart1WCSolidToScatra::init(MPI_Comm comm,
   // do some checks
   {
     auto convform = Teuchos::getIntegralValue<Inpar::ScaTra::ConvForm>(scatraparams, "CONVFORM");
-    if (convform != Inpar::ScaTra::convform_conservative)
+    const bool isintensive = scatraparams.get<bool>("ISINTENSIVESCALAR");
+    if (convform != Inpar::ScaTra::convform_conservative && !isintensive)
     {
       FOUR_C_THROW(
           "If the scalar transport problem is solved on the deforming domain, the conservative "

@@ -11,6 +11,7 @@
 #include "4C_adapter_str_ssiwrapper.hpp"
 #include "4C_contact_nitsche_strategy_ssi.hpp"
 #include "4C_global_data.hpp"
+#include "4C_inpar_scatra.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_timint_implicit.hpp"
@@ -63,7 +64,8 @@ void SSI::SSIPart2WC::init(MPI_Comm comm, const Teuchos::ParameterList& globalti
   }
 
   auto convform = Teuchos::getIntegralValue<Inpar::ScaTra::ConvForm>(scatraparams, "CONVFORM");
-  if (convform == Inpar::ScaTra::convform_convective)
+  const bool isintensive = scatraparams.get<bool>("ISINTENSIVESCALAR");
+  if (convform == Inpar::ScaTra::convform_convective && !isintensive)
   {
     FOUR_C_THROW(
         "If the scalar transport problem is solved on the deforming domain, the conservative "
