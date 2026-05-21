@@ -218,7 +218,9 @@ namespace Mixture
       [[nodiscard]] T evaluate_current_lambda_r() const;
       [[nodiscard]] T evaluate_growth_reaction_coefficient() const;
       [[nodiscard]] T evaluate_remodeling_reaction_coefficient() const;
-
+      [[nodiscard]] T evaluate_current_lambda_f() const;
+      [[nodiscard]] T evaluate_current_lambda_e() const;
+      [[nodiscard]] T evaluate_current_lambda_ext() const;
       [[nodiscard]] T evaluate_d_current_growth_scalar_d_lambda_f_sq() const;
       [[nodiscard]] T evaluate_d_current_lambda_r_d_lambda_f_sq() const;
       [[nodiscard]] T evaluate_d_current_cauchy_stress_d_lambda_f_sq() const;

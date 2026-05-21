@@ -715,6 +715,30 @@ T Mixture::Implementation::RemodelFiberImplementation<numstates, T>::evaluate_cu
 }
 
 template <int numstates, typename T>
+T Mixture::Implementation::RemodelFiberImplementation<numstates, T>::evaluate_current_lambda_e()
+    const
+{
+  return states_.back().lambda_f /
+         (states_.back().lambda_r *
+             states_.back().lambda_ext);  // lambda_e = lambda_f / (lambda_r * lambda_ext)
+}
+
+template <int numstates, typename T>
+T Mixture::Implementation::RemodelFiberImplementation<numstates, T>::evaluate_current_lambda_f()
+    const
+{
+  return states_.back().lambda_f;
+}
+
+template <int numstates, typename T>
+T Mixture::Implementation::RemodelFiberImplementation<numstates, T>::evaluate_current_lambda_ext()
+    const
+{
+  return states_.back().lambda_ext;
+}
+
+
+template <int numstates, typename T>
 T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_current_growth_scalar_d_lambda_f_sq() const
 {
@@ -912,6 +936,24 @@ template <int numstates>
 double Mixture::RemodelFiber<numstates>::evaluate_remodeling_reaction_coefficient() const
 {
   return impl_->evaluate_remodeling_reaction_coefficient();
+}
+
+template <int numstates>
+double Mixture::RemodelFiber<numstates>::evaluate_current_lambda_e() const
+{
+  return impl_->evaluate_current_lambda_e();
+}
+
+template <int numstates>
+double Mixture::RemodelFiber<numstates>::evaluate_current_lambda_f() const
+{
+  return impl_->evaluate_current_lambda_f();
+}
+
+template <int numstates>
+double Mixture::RemodelFiber<numstates>::evaluate_current_lambda_ext() const
+{
+  return impl_->evaluate_current_lambda_ext();
 }
 
 template <int numstates>

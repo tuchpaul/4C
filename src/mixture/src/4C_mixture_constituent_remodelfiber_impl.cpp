@@ -142,6 +142,9 @@ void Mixture::MixtureConstituentRemodelFiberImpl::register_output_data_names(
   names_and_size["mixture_constituent_" + std::to_string(id()) + "_sig"] = 1;
   names_and_size["mixture_constituent_" + std::to_string(id()) + "_growth_scalar"] = 1;
   names_and_size["mixture_constituent_" + std::to_string(id()) + "_lambda_r"] = 1;
+  names_and_size["mixture_constituent_" + std::to_string(id()) + "_lambda_f"] = 1;
+  names_and_size["mixture_constituent_" + std::to_string(id()) + "_lambda_e"] = 1;
+  names_and_size["mixture_constituent_" + std::to_string(id()) + "_lambda_ext"] = 1;
 }
 
 bool Mixture::MixtureConstituentRemodelFiberImpl::evaluate_output_data(
@@ -176,6 +179,30 @@ bool Mixture::MixtureConstituentRemodelFiberImpl::evaluate_output_data(
     for (int gp = 0; gp < num_gp(); ++gp)
     {
       data(gp, 0) = remodel_fiber_[gp].evaluate_current_lambda_r();
+    }
+    return true;
+  }
+  else if (name == "mixture_constituent_" + std::to_string(id()) + "_lambda_f")
+  {
+    for (int gp = 0; gp < num_gp(); ++gp)
+    {
+      data(gp, 0) = remodel_fiber_[gp].evaluate_current_lambda_f();
+    }
+    return true;
+  }
+  else if (name == "mixture_constituent_" + std::to_string(id()) + "_lambda_e")
+  {
+    for (int gp = 0; gp < num_gp(); ++gp)
+    {
+      data(gp, 0) = remodel_fiber_[gp].evaluate_current_lambda_e();
+    }
+    return true;
+  }
+  else if (name == "mixture_constituent_" + std::to_string(id()) + "_lambda_ext")
+  {
+    for (int gp = 0; gp < num_gp(); ++gp)
+    {
+      data(gp, 0) = remodel_fiber_[gp].evaluate_current_lambda_ext();
     }
     return true;
   }
