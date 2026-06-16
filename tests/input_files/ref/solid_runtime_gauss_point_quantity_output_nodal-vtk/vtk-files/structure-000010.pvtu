@@ -11,6 +11,9 @@
       <PDataArray type="Float64" Name="current_reference_density" format="ascii"/>
       <PDataArray type="Float64" Name="displacement" NumberOfComponents="3" format="ascii"/>
       <PDataArray type="Float64" Name="mixture_constituent_0_growth_scalar" format="ascii"/>
+      <PDataArray type="Float64" Name="mixture_constituent_0_lambda_e" format="ascii"/>
+      <PDataArray type="Float64" Name="mixture_constituent_0_lambda_ext" format="ascii"/>
+      <PDataArray type="Float64" Name="mixture_constituent_0_lambda_f" format="ascii"/>
       <PDataArray type="Float64" Name="mixture_constituent_0_lambda_r" format="ascii"/>
       <PDataArray type="Float64" Name="mixture_constituent_0_sig" format="ascii"/>
       <PDataArray type="Float64" Name="mixture_constituent_0_sig_h" format="ascii"/>
