@@ -1,18 +1,5 @@
-TITLE:
-  - "Simple test case based on 1hex8 element with isotropic elastic-viscoplastic"
-  - "behavior in a finite strain setting. The following conditions are assumed:"
-  - "- element is stretched at a constant strain rate"
-  - "- element can freely contract in lateral dimensions"
-  - "- viscoplasticity law: flow rule and hardening behavior modeled with the"
-  - "Reformulated Johnson-Cook law, as shown in:"
-  - "Mareau: A thermodynamically consistent formulation of the Johnson-Cook"
-  - "model, Mechanics of Materials 143, 2020"
-  - "- time integration of internal variables using logarithmic substepping, as shown in:"
-  - "Ana: Continuum Modeling and Calibration of Viscoplasticity in the Context"
-  - "of the Lithium Anode in Solid-State Batteries"
-  - "(Master's Thesis, Institute for Computational Mechanics, TU Munich, 2024)"
 PROBLEM TYPE:
-  PROBLEMTYPE: "Structure"
+  PROBLEMTYPE: "Thermo_Structure_Interaction"
 IO:
   STRUCT_STRESS: "Cauchy"
   STRUCT_STRAIN: "LOG"
@@ -24,15 +11,46 @@ IO/RUNTIME VTK OUTPUT:
   INTERVAL_STEPS: 1
 STRUCTURAL DYNAMIC:
   DYNAMICTYPE: "Statics"
-  RESTARTEVERY: 1
-  TIMESTEP: 1e-04
-  NUMSTEP: 100000000
-  MAXTIME: 0.0001
   TOLDISP: 1e-08
   NEGLECTINERTIA: true
   LINEAR_SOLVER: 1
+THERMAL DYNAMIC:
+  DYNAMICTYPE: OneStepTheta
+  INITIALFIELD: "field_by_function"
+  INITFUNCNO: 2
+  TOLTEMP: 1e-08
+  NORM_TEMP: Abs
+  TOLRES: 1e-06
+  NORM_RESF: Abs
+  NORMCOMBI_RESFTEMP: And
+  ITERNORM: L2
+  PREDICT: ConstTemp
+  ADAPTCONV: false
+  ADAPTCONV_BETTER: 0.1
+  LUMPCAPA: false
+  LINEAR_SOLVER: 1
+THERMAL DYNAMIC/RUNTIME VTK OUTPUT:
+  OUTPUT_THERMO: true
+  TEMPERATURE: true
+TSI DYNAMIC:
+  COUPALGO: tsi_monolithic
+  MATCHINGGRID: true
+  RESTARTEVERY: 30
+  NUMSTEP: 100000000
+  MAXTIME: 0.0001 # [s]
+  TIMESTEP: 1e-6 # [s]
+  ITEMAX: 10
+  ITEMIN: 0
+  RESULTSEVERY: 1
+  NORM_INC: Abs
+TSI DYNAMIC/MONOLITHIC:
+  LINEAR_SOLVER: 1
+  MERGE_TSI_BLOCK_MATRIX: true
+  TOLINC: 1e-08
+  CONVTOL: 1e-08
+  NORM_RESF: Abs
 SOLVER 1:
-  SOLVER: "UMFPACK"
+  SOLVER: UMFPACK
 MATERIALS:
   - MAT: 1
     MAT_MultiplicativeSplitDefgradElastHyper:
@@ -40,20 +58,20 @@ MATERIALS:
       MATIDSEL: [2]
       NUMFACINEL: 1
       INELDEFGRADFACIDS: [3]
-      DENS: 7830
+      DENS: 7830e-12 # [t/mm^3 = N*s^2/mm^4]
+      REF_TEMPERATURE: 293.0 # [K]
+      THERMAL_EXPANSION_COEFFICIENT: 11e-6 # [1/K]
   - MAT: 2
     ELAST_CoupNeoHooke:
-      YOUNG: 200000
-      NUE: 0.29
+      YOUNG: 200000 # [N/mm^2]
+      NUE: 0.29 # [-]
   - MAT: 3
     MAT_InelasticDefgradTransvIsotropElastViscoplast:
       VISCOPLAST_LAW_ID: 4
+      TAYLOR_QUINNEY_COEFFICIENT: 0.85 # [-]
       FIBER_READER_ID: 5
       MAT_BEHAVIOR: "isotropic"
       TIME_INTEGRATION_HIST_VARS: logarithmic
-      LOCAL_SUBSTEPPING:
-        USE_SUBSTEPPING: true
-        MAX_SUBSTEPPING_HALVE_NUM: 10
       LOCAL_NEWTON:
         CONV_CHECK: residual_and_increment_ratio
         MAX_ITER: 100
@@ -64,14 +82,14 @@ MATERIALS:
         DIVER_CONT: stop
   - MAT: 4
     MAT_ViscoplasticLawReformulatedJohnsonCook:
-      STRAIN_RATE_PREFAC: 1
-      STRAIN_RATE_EXP_FAC: 0.014
-      INIT_YIELD_STRENGTH: 792
-      ISOTROP_HARDEN_PREFAC: 510
-      ISOTROP_HARDEN_EXP: 0.26
-      REF_TEMPERATURE: 293.0
-      TEMPERATURE_SENS: 1.03
-      MELT_TEMPERATURE: 1000.0
+      STRAIN_RATE_PREFAC: 1 # [1/s]
+      STRAIN_RATE_EXP_FAC: 0.014 # [-]
+      INIT_YIELD_STRENGTH: 792 # [N/mm^2]
+      ISOTROP_HARDEN_PREFAC: 510 # [N/mm^2]
+      ISOTROP_HARDEN_EXP: 0.26 # [-]
+      REF_TEMPERATURE: 293.0 # [K]
+      TEMPERATURE_SENS: 1.03 # [-]
+      MELT_TEMPERATURE: 1793 # [K]
   - MAT: 5
     ELAST_CoupTransverselyIsotropic:
       ALPHA: 1
@@ -82,6 +100,19 @@ MATERIALS:
   - MAT: 100
     ELAST_StructuralTensor:
       STRATEGY: "Standard"
+
+  - MAT: 10
+    MAT_Fourier:
+      CAPA: 3.734910 # [mJ/(mm^3*K) = N/(mm^2*K)]
+      CONDUCT:
+        constant: [37] # [mW/(mm*K) = N/s/K]
+
+CLONING MATERIAL MAP:
+  - SRC_FIELD: structure
+    SRC_MAT: 1
+    TAR_FIELD: thermo
+    TAR_MAT: 10
+
 FUNCT1:
   - SYMBOLIC_FUNCTION_OF_SPACE_TIME: "a"
   - VARIABLE: 0
@@ -89,56 +120,110 @@ FUNCT1:
     TYPE: "multifunction"
     NUMPOINTS: 2
     TIMES: [0, 1.6e+16]
-    DESCRIPTION: ["(exp(1.0e2*t)-1.0)"]
+    DESCRIPTION: ["(exp(1.0e2*t)-1.0)"] # [mm]
+FUNCT2:
+  - SYMBOLIC_FUNCTION_OF_SPACE_TIME: "temperature_initial_field"
+  - VARIABLE: 0
+    TYPE: expression
+    NAME: "temperature_initial_field"
+    DESCRIPTION: "293"
 RESULT DESCRIPTION:
   - STRUCTURE:
       DIS: "structure"
       NODE: 4
       QUANTITY: "dispy"
-      VALUE: -4.01558458395893415e-03
-      TOLERANCE: 4e-11
+      VALUE: -0.00394895027488
+      TOLERANCE: 1e-14
   - STRUCTURE:
       DIS: "structure"
       NODE: 5
       QUANTITY: "dispx"
-      VALUE: -4.01558458395998453e-03
-      TOLERANCE: 4e-11
+      VALUE: -0.00394895027488
+      TOLERANCE: 1e-14
   - STRUCTURE:
       DIS: "structure"
       NODE: 8
       QUANTITY: "dispx"
-      VALUE: -4.01558458395858894e-03
-      TOLERANCE: 4e-11
+      VALUE: -0.00394895027488
+      TOLERANCE: 1e-14
   - STRUCTURE:
       DIS: "structure"
       NODE: 8
       QUANTITY: "dispy"
-      VALUE: -4.01558458395919263e-03
-      TOLERANCE: 4e-11
+      VALUE: -0.00394895027488
+      TOLERANCE: 1e-14
   - STRUCTURE:
       DIS: "structure"
       NODE: 8
       QUANTITY: "dispz"
       VALUE: 0.010050167084167949
-      TOLERANCE: 1e-10
+      TOLERANCE: 1e-14
   - STRUCTURE:
       DIS: "structure"
       NODE: 6
       QUANTITY: "dispx"
-      VALUE: -4.01558458395947105e-03
-      TOLERANCE: 4e-11
+      VALUE: -0.00394895027488
+      TOLERANCE: 1e-14
   - STRUCTURE:
       DIS: "structure"
       NODE: 4
       QUANTITY: "stress_zz"
-      VALUE: 9.31099439482890148e+02
-      TOLERANCE: 0.00098
+      VALUE: 977.652620618
+      TOLERANCE: 1e-8
   - STRUCTURE:
       DIS: "structure"
       NODE: 8
       QUANTITY: "stress_zz"
-      VALUE: 9.31099439481397212e+02
-      TOLERANCE: 0.00098
+      VALUE: 977.652620618
+      TOLERANCE: 1e-8
+  - THERMAL:
+      DIS: thermo
+      NODE: 1
+      QUANTITY: temp
+      VALUE: 294.095019277192
+      TOLERANCE: 1e-11
+  - THERMAL:
+      DIS: thermo
+      NODE: 2
+      QUANTITY: temp
+      VALUE: 294.095019277192
+      TOLERANCE: 1e-11
+  - THERMAL:
+      DIS: thermo
+      NODE: 3
+      QUANTITY: temp
+      VALUE: 294.095019277192
+      TOLERANCE: 1e-11
+  - THERMAL:
+      DIS: thermo
+      NODE: 4
+      QUANTITY: temp
+      VALUE: 294.095019277192
+      TOLERANCE: 1e-11
+  - THERMAL:
+      DIS: thermo
+      NODE: 5
+      QUANTITY: temp
+      VALUE: 294.095019277192
+      TOLERANCE: 1e-11
+  - THERMAL:
+      DIS: thermo
+      NODE: 6
+      QUANTITY: temp
+      VALUE: 294.095019277192
+      TOLERANCE: 1e-11
+  - THERMAL:
+      DIS: thermo
+      NODE: 7
+      QUANTITY: temp
+      VALUE: 294.095019277192
+      TOLERANCE: 1e-11
+  - THERMAL:
+      DIS: thermo
+      NODE: 8
+      QUANTITY: temp
+      VALUE: 294.095019277192
+      TOLERANCE: 1e-10
 DESIGN POINT DIRICH CONDITIONS:
   - E: 1
     NUMDOF: 3
@@ -238,4 +323,4 @@ NODE COORDS:
   - "NODE 7 COORD 5.0000000000000000e-01 5.0000000000000000e-01 -5.0000000000000000e-01"
   - "NODE 8 COORD 5.0000000000000000e-01 5.0000000000000000e-01 5.0000000000000000e-01"
 STRUCTURE ELEMENTS:
-  - "1 SOLID HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear FIBER1 0 0 1.0"
+  - "1 SOLIDSCATRA HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear FIBER1 0 0 1.0 TYPE Undefined"
